@@ -1,5 +1,17 @@
 <template>
   <div class="dashboard">
-    <h1>This is an dashboard page</h1>
+    <addNote/>
   </div>
 </template>
+
+<script>
+import addNote from '@/components/Add_note'
+export default {
+  components: { addNote },
+  data () {
+    return {
+
+    }
+  }
+}
+</script>

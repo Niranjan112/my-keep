@@ -32,7 +32,7 @@ export default {
   data () {
     return {
       lists: [
-        { icon: 'lock_open', title: 'Sign in', link: '/' },
+        { icon: 'lock_open', title: 'Sign in', link: '/signin' },
         { icon: 'face', title: 'Sign Up', link: '/signup' }
       ]
     }

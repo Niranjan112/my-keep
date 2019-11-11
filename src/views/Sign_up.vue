@@ -15,46 +15,43 @@
               <v-text-field
                 v-model="name"
                 label="Name"
+                :error-messages="nameErrors"
+                prepend-icon="person"
                 color="teal darken-2"
                 required
                 counter
+                @blur="$v.name.$touch()"
               ></v-text-field>
 
               <v-text-field
+                :error-messages="emailErrors"
                 color="teal darken-2"
                 v-model="email"
+                prepend-icon="email"
                 label="E-mail"
                 counter
                 required
+                @blur="$v.email.$touch()"
                 >
               </v-text-field>
 
               <v-text-field
-                v-model="password1"
-                label="New Password"
+                prepend-icon="lock"
+                :error-messages="passErrors"
+                v-model="password"
+                label="Create your password"
                 color="teal darken-2"
-                :append-icon="showPassword1 ? 'visibility' : 'visibility_off'"
-                :type="showPassword1 ? 'text' : 'password'"
-                @click:append="showPassword1 = !showPassword1"
+                :append-icon="showPassword ? 'visibility' : 'visibility_off'"
+                :type="showPassword ? 'text' : 'password'"
+                @click:append="showPassword = !showPassword"
                 counter
                 required
-                >
-              </v-text-field>
-
-              <v-text-field
-                v-model="password2"
-                label="Enter Password Again"
-                color="teal darken-2"
-                :append-icon="showPassword2 ? 'visibility' : 'visibility_off'"
-                :type="showPassword2 ? 'text' : 'password'"
-                @click:append="showPassword2 = !showPassword2"
-                counter
-                required
+                @blur="$v.password.$touch()"
                 >
               </v-text-field>
 
               <div class="text-center">
-                <v-btn class="teal darken-2" dark large>
+                <v-btn class="teal darken-2" dark large @click="signUp">
                   <v-icon left>done</v-icon>Sign up
                 </v-btn>
               </div>
@@ -67,14 +64,57 @@
 </template>
 
 <script>
+import firebase from 'firebase'
+import { validationMixin } from 'vuelidate'
+import { required, minLength, email } from 'vuelidate/lib/validators'
 export default {
+  mixins: [validationMixin],
+  validations: {
+    name: { required },
+    email: { required, email },
+    password: { required, minLength: minLength(6) }
+  },
   data () {
     return {
       name: '',
-      password1: '',
-      password2: '',
-      showPassword1: false,
-      showPassword2: false
+      email: '',
+      password: '',
+      showPassword: false
+    }
+  },
+
+  methods: {
+    signUp () {
+      this.$v.$touch()
+      firebase.auth().createUserWithEmailAndPassword(this.email, this.password).then(() => {
+        console.log(this.email, this.password)
+        this.$router.replace('dashboard')
+      }).catch(err => {
+        console.log(err)
+      })
+    }
+  },
+
+  computed: {
+    nameErrors () {
+      const errors = []
+      if (!this.$v.name.$dirty) return errors
+      !this.$v.name.required && errors.push('Name is required.')
+      return errors
+    },
+    emailErrors () {
+      const errors = []
+      if (!this.$v.email.$dirty) return errors
+      !this.$v.email.email && errors.push('Must be valid e-mail')
+      !this.$v.email.required && errors.push('E-mail is required')
+      return errors
+    },
+    passErrors () {
+      const errors = []
+      if (!this.$v.email.$dirty) return errors
+      !this.$v.password.required && errors.push('Password is required')
+      !this.$v.password.minLength && errors.push('Password should be atleast 6 character')
+      return errors
     }
   }
 }

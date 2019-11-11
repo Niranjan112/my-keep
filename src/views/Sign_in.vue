@@ -23,33 +23,36 @@
             <v-form ref="form" class="px-8 py-3">
               <v-text-field
                 v-model="email"
+                :error-messages="emailErrors"
                 label="E-mail ID"
                 color="teal darken-2"
+                prepend-icon="email"
                 required
                 counter
+                @blur="$v.email.$touch()"
               ></v-text-field>
 
               <v-text-field
                 v-model="password"
+                :error-messages="passErrors"
                 label="Password"
+                prepend-icon="lock"
                 color="teal darken-2"
-                :append-icon="show1 ? 'visibility' : 'visibility_off'"
-                :type="show1 ? 'text' : 'password'"
+                :append-icon="showPassword ? 'visibility' : 'visibility_off'"
+                :type="showPassword ? 'text' : 'password'"
                 counter
                 required
+                @click:append="showPassword = !showPassword"
+                @blur="$v.password.$touch()"
                 >
               </v-text-field>
 
               <div class="text-center pt-2">
-                <v-btn class="teal darken-2" large dark>
+                <v-btn class="teal darken-2" large dark @click="signIn">
                   <v-icon left>done</v-icon>Sign in
                 </v-btn>
               </div>
             </v-form>
-
-            <div class="text-center">
-              <p>Forgot Password?</p>
-            </div>
           </v-card>
         </v-flex>
       </v-layout>
@@ -58,11 +61,48 @@
 </template>
 
 <script>
+import firebase from 'firebase'
+import { validationMixin } from 'vuelidate'
+import { required, minLength, email } from 'vuelidate/lib/validators'
 export default {
+  mixins: [validationMixin],
+  validations: {
+    email: { required, email },
+    password: { required, minLength: minLength(6) }
+  },
   data () {
     return {
+      email: '',
       password: '',
-      show1: false
+      showPassword: false
+    }
+  },
+  methods: {
+    signIn () {
+      this.$v.$touch()
+      firebase.auth().signInWithEmailAndPassword(this.email, this.password).then(() => {
+        console.log('Logged in')
+        this.$router.replace('dashboard')
+      }).catch(err => {
+        console.log(err)
+      })
+    }
+  },
+
+  computed: {
+    emailErrors () {
+      const errors = []
+      if (!this.$v.email.$dirty) return errors
+      !this.$v.email.email && errors.push('Must be valid e-mail')
+      !this.$v.email.required && errors.push('E-mail is required')
+      return errors
+    },
+    passErrors () {
+      const errors = []
+      if (!this.$v.email.$dirty) return errors
+      !this.$v.password.required && errors.push('Password is required')
+      !this.$v.password.minLength && errors.push('Password should be atleast 6 character')
+      return errors
     }
   }
 }
