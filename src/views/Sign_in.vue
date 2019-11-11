@@ -57,6 +57,20 @@
         </v-flex>
       </v-layout>
     </v-container>
+    <v-snackbar
+      v-model="snackbar"
+      timeout="5000"
+      class="mb-12"
+    >
+      {{ text }}
+      <v-btn
+        class="teal darken-2"
+        text
+        @click="snackbar = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
   </div>
 </template>
 
@@ -74,7 +88,9 @@ export default {
     return {
       email: '',
       password: '',
-      showPassword: false
+      showPassword: false,
+      snackbar: false,
+      text: ''
     }
   },
   methods: {
@@ -84,6 +100,8 @@ export default {
         console.log('Logged in')
         this.$router.replace('dashboard')
       }).catch(err => {
+        this.snackbar = true
+        this.text = err.message
         console.log(err)
       })
     }
